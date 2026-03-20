@@ -9,25 +9,33 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-pip build-essential git zip unzip openjdk-17-jdk
-        pip install buildozer cython
+        sudo apt install -y \
+        python3-pip build-essential git zip unzip openjdk-17-jdk \
+        zlib1g-dev libncurses5 libncurses5-dev libffi-dev libssl-dev
+
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install buildozer cython kivy
 
     - name: Initialize buildozer
       run: buildozer init
 
-    - name: Modify buildozer.spec
+    - name: Configure buildozer
       run: |
         sed -i 's/title = .*/title = Flappy Bird/' buildozer.spec
         sed -i 's/package.name = .*/package.name = flappybird/' buildozer.spec
+        sed -i 's/package.domain = .*/package.domain = org.test/' buildozer.spec
+        sed -i 's/source.include_exts = .*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
         sed -i 's/requirements = .*/requirements = python3,kivy/' buildozer.spec
 
     - name: Build APK
-      run: buildozer -v android debug
+      run: buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
