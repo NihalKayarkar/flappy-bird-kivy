@@ -1,0 +1,36 @@
+name: Build APK
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-pip build-essential git zip unzip openjdk-17-jdk
+        pip install buildozer cython
+
+    - name: Initialize buildozer
+      run: buildozer init
+
+    - name: Modify buildozer.spec
+      run: |
+        sed -i 's/title = .*/title = Flappy Bird/' buildozer.spec
+        sed -i 's/package.name = .*/package.name = flappybird/' buildozer.spec
+        sed -i 's/requirements = .*/requirements = python3,kivy/' buildozer.spec
+
+    - name: Build APK
+      run: buildozer -v android debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: flappy-apk
+        path: bin/*.apk
