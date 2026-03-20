@@ -1,49 +1,20 @@
 name: Build APK
 
-on:
-  push:
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install system dependencies
-      run: |
-        sudo apt update --fix-missing
-        sudo apt install -y software-properties-common
-        sudo add-apt-repository universe
-        sudo apt update
+      - name: Build with Kivy (Buildozer)
+        uses: ArtemSBulgakov/buildozer-action@v1
 
-        sudo apt install -y \
-        python3-pip build-essential git zip unzip openjdk-17-jdk \
-        zlib1g-dev libncurses5 libncurses5-dev libffi-dev libssl-dev \
-        libsqlite3-dev libbz2-dev libreadline-dev liblzma-dev
-
-    - name: Install Python dependencies
-      run: |
-        pip install --upgrade pip
-        pip install buildozer cython kivy
-
-    - name: Initialize buildozer
-      run: buildozer init
-
-    - name: Configure buildozer
-      run: |
-        sed -i 's/title = .*/title = Flappy Bird/' buildozer.spec
-        sed -i 's/package.name = .*/package.name = flappybird/' buildozer.spec
-        sed -i 's/package.domain = .*/package.domain = org.test/' buildozer.spec
-        sed -i 's/source.include_exts = .*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
-        sed -i 's/requirements = .*/requirements = python3,kivy/' buildozer.spec
-
-    - name: Build APK
-      run: buildozer -v android debug
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: flappy-apk
-        path: bin/*.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flappy-apk
+          path: bin/*.apk
